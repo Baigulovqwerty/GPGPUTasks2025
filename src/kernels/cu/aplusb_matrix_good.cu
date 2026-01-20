@@ -12,6 +12,8 @@ __global__ void aplusb_matrix_good(const unsigned int* a,
                              unsigned int  width,
                              unsigned int  height)
 {
+    const uint32_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    c[index] = a[index] + b[index];
     // все три массива - линейно выложенные двумерные матрицы размера width (число столбиков) x height (число рядов)
     // при этом в памяти подряд идут элементы являющимися соседями в рамках одного ряда,
     // т.е. матрица выложена в памяти линейно ряд за рядом
