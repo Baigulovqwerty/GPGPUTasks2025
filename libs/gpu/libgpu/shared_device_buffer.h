@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstddef>
 
+#include <cuda_fp16.h>
+
 #include "shared_host_buffer.h"
 
 #include <libbase/point.h>
@@ -147,6 +149,7 @@ typedef shared_device_buffer_typed<int32_t>			gpu_mem_32i;
 typedef shared_device_buffer_typed<uint8_t>			gpu_mem_8u;
 typedef shared_device_buffer_typed<uint16_t>		gpu_mem_16u;
 typedef shared_device_buffer_typed<uint32_t>		gpu_mem_32u;
+typedef shared_device_buffer_typed<half>			gpu_mem_16f;
 typedef shared_device_buffer_typed<float>			gpu_mem_32f;
 typedef shared_device_buffer_typed<double>			gpu_mem_64f;
 
