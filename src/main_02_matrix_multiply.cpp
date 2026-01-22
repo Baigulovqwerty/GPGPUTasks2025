@@ -61,8 +61,8 @@ void run(int argc, char** argv)
     std::vector<float> output_c_cpu(h * w, 0); // rows=H x cols=W
     std::vector<float> output_c_gpu(h * w, 0); // rows=H x cols=W
 
-    std::vector<half> input_a_half_cpu(h * k, 0);
-    std::vector<half> input_b_half_cpu(k * w, 0);
+    std::vector<half> input_a_half_cpu(h * k, __float2half(0.0f));
+    std::vector<half> input_b_half_cpu(k * w, __float2half(0.0f));
 
     FastRandom r;
     for (size_t i = 0; i < input_a_cpu.size(); ++i) {
