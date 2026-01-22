@@ -8,25 +8,32 @@
 #include "../defines.h"
 
 __global__ void radix_sort_03_global_prefixes_scan_accumulation(
-    // это лишь шаблон! смело меняйте аргументы и используемые буфера! можете сделать даже больше кернелов, если это вызовет затруднения - смело спрашивайте в чате
-    // НЕ ПОДСТРАИВАЙТЕСЬ ПОД СИСТЕМУ! СВЕРНИТЕ С РЕЛЬС!! БУНТ!!! АНТИХАЙП!11!!1
-    // TODO try char
-    const unsigned int* buffer1,
-          unsigned int* buffer2,
-    unsigned int a1,
-    unsigned int a2)
+    const unsigned int* precount,
+    unsigned int* ans,
+    unsigned int n
+)
 {
-    // TODO
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    unsigned int acc = 0;
+    unsigned int bit_acc = 0;
+    if (index <= n) {
+        for (int bit_ind = 31; bit_ind >= 0; --bit_ind) {
+            if (index & (1u << bit_ind)) {
+                acc += precount[bit_acc + (1u << bit_ind) - 1];
+                bit_acc += (1u << bit_ind);
+            }
+        }
+        ans[index - 1] = acc;
+    }
 }
 
 namespace cuda {
-void radix_sort_03_global_prefixes_scan_accumulation(const gpu::WorkSize &workSize,
-            const gpu::gpu_mem_32u &buffer1, gpu::gpu_mem_32u &buffer2, unsigned int a1, unsigned int a2)
+void radix_sort_03_global_prefixes_scan_accumulation(const gpu::WorkSize &workSize, const gpu::gpu_mem_32u &precount, gpu::gpu_mem_32u &ans, unsigned int n)
 {
     gpu::Context context;
     rassert(context.type() == gpu::Context::TypeCUDA, 34523543124312, context.type());
     cudaStream_t stream = context.cudaStream();
-    ::radix_sort_03_global_prefixes_scan_accumulation<<<workSize.cuGridSize(), workSize.cuBlockSize(), 0, stream>>>(buffer1.cuptr(), buffer2.cuptr(), a1, a2);
+    ::radix_sort_03_global_prefixes_scan_accumulation<<<workSize.cuGridSize(), workSize.cuBlockSize(), 0, stream>>>(precount.cuptr(), ans.cuptr(), n);
     CUDA_CHECK_KERNEL(stream);
 }
 } // namespace cuda

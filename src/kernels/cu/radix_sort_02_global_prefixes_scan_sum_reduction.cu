@@ -8,24 +8,36 @@
 #include "../defines.h"
 
 __global__ void radix_sort_02_global_prefixes_scan_sum_reduction(
-    // это лишь шаблон! смело меняйте аргументы и используемые буфера! можете сделать даже больше кернелов, если это вызовет затруднения - смело спрашивайте в чате
-    // НЕ ПОДСТРАИВАЙТЕСЬ ПОД СИСТЕМУ! СВЕРНИТЕ С РЕЛЬС!! БУНТ!!! АНТИХАЙП!11!!1
-    // TODO try char
-    const unsigned int* buffer1,
-          unsigned int* buffer2,
-    unsigned int a1)
+    const unsigned int* a,
+    unsigned int* precount,
+    unsigned int n,
+    unsigned int k
+)
 {
-    // TODO
+    const unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int from = ((1u << (k-1)) - 1) + index * (1u << k);
+    unsigned int to = from + (1u << (k - 1));
+    if (to < n) {
+        precount[to] += precount[from];
+    }
+
+    for (int ii = 0; ii < FUSE_N; ++ii) {
+        from = to;
+        to = from + (1u << (k + ii));
+        if (!(index & ((1u << (ii + 1)) - 1)) && (to < n)) {
+            precount[to] += precount[from];
+        }
+    }
 }
 
 namespace cuda {
 void radix_sort_02_global_prefixes_scan_sum_reduction(const gpu::WorkSize &workSize,
-    const gpu::gpu_mem_32u &buffer1, gpu::gpu_mem_32u &buffer2, unsigned int a1)
+    const gpu::gpu_mem_32u &a, gpu::gpu_mem_32u &precount, unsigned int n, unsigned int k)
 {
     gpu::Context context;
     rassert(context.type() == gpu::Context::TypeCUDA, 34523543124312, context.type());
     cudaStream_t stream = context.cudaStream();
-    ::radix_sort_02_global_prefixes_scan_sum_reduction<<<workSize.cuGridSize(), workSize.cuBlockSize(), 0, stream>>>(buffer1.cuptr(), buffer2.cuptr(), a1);
+    ::radix_sort_02_global_prefixes_scan_sum_reduction<<<workSize.cuGridSize(), workSize.cuBlockSize(), 0, stream>>>(a.cuptr(), precount.cuptr(), n, k);
     CUDA_CHECK_KERNEL(stream);
 }
 } // namespace cuda
